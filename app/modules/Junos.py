@@ -20,21 +20,24 @@ logging.getLogger("ncclient").setLevel(logging.ERROR)
 class JUNOS(Firewall):
 	def __init__(self,firewall_config):
 		self.firewall_config = firewall_config
-		if self.firewall_config['privatekey'] and self.firewall_config['privatekeypass']:
+		try:
+			assert self.firewall_config['privatekey']
+			assert self.firewall_config['privatekeypass']
+		except:
+			#User password connection
+			logger.info("Juniper User/Password connection.")
+			self.dev = Device(host=self.firewall_config['primary'], password=self.firewall_config['pass'],\
+								user=self.firewall_config['user'], port=self.firewall_config['port'], gather_facts=False)
+		else:
 			#RSA SSH connection
 			logger.info("Juniper RSA SSH connection.")
 			self.dev = Device(host=self.firewall_config['primary'], passwd=self.firewall_config['privatekeypass'],\
 								ssh_private_key_file=self.firewall_config['privatekey'],user=self.firewall_config['user'],\
 								port=self.firewall_config['port'], gather_facts=False)
-		else:
-			#User password connection
-			logger.info("Juniper User/Password connection.")
-			self.dev = Device(host=self.firewall_config['primary'], password=self.firewall_config['pass'],\
-								user=self.firewall_config['user'], port=self.firewall_config['port'], gather_facts=False)
 		self.dev.open(normalize=True)
 		try:
 			self.dev.timeout = int(self.firewall_config['timeout']) if self.firewall_config['timeout'] else 15
-		except ValueError:
+		except (ValueError, KeyError):
 			logger.warning("Firewall timeout is not an int, setting default value.")
 			self.dev.timeout = 15
 		self.primary = self.firewall_config['primary']
@@ -343,15 +346,16 @@ class objects(JUNOS):
 											entries.append(app)
 								elif request.args[opcion].lower() in app[opcion].lower():
 									entries.append(app)
-			for application in soup.applications.children:
-				if type(application) != Tag or application.name != 'application':
-					continue
-				aux = {
-				'name' : application.find('name').text,
-				'protocol' : application.protocol.text if application.protocol else '',
-				'port' : application.find('destination-port').text if application.find('destination-port') else ''
-				}
-				entries.append(aux)
+			if soup.applications:
+				for application in soup.applications.children:
+					if type(application) != Tag or application.name != 'application':
+						continue
+					aux = {
+					'name' : application.find('name').text,
+					'protocol' : application.protocol.text if application.protocol else '',
+					'port' : application.find('destination-port').text if application.find('destination-port') else ''
+					}
+					entries.append(aux)
 		elif object == "address-group":
 			filter = E('security',E('zones'))
 			try:
@@ -389,18 +393,19 @@ class objects(JUNOS):
 			finally:
 				self.dev.close()
 			soup = BS(str(rpc),'xml')
-			for application in soup.applications.children:
-				if type(application) != Tag or application.name != 'application-set':
-					continue
-				aux = {
-				'name' : application.find('name').text,
-				'members' : list()
-				}
-				for member in application.children:
-					if type(member) != Tag or member.name == 'name':
+			if soup.applications:
+				for application in soup.applications.children:
+					if type(application) != Tag or application.name != 'application-set':
 						continue
-					aux['members'].append(member.find('name').text)
-				entries.append(aux)
+					aux = {
+					'name' : application.find('name').text,
+					'members' : list()
+					}
+					for member in application.children:
+						if type(member) != Tag or member.name == 'name':
+							continue
+						aux['members'].append(member.find('name').text)
+					entries.append(aux)
 		else:
 			logger.warning("Resource not found.")
 			return {'error' : 'Resource not found.'}, 404
@@ -732,7 +737,7 @@ class route(JUNOS):
 		else:
 			logger.info("{0}: Connected successfully.".format(self.firewall_config['name']))
 		try:
-			rpc = etree.tostring(str(self.dev.rpc.get_route_information()), encoding='unicode')
+			rpc = etree.tostring(self.dev.rpc.get_route_information(), encoding='unicode')
 			soup = BS(str(rpc).replace('\n            ','').replace('\n',''),'xml')
 		except Exception as e:
 			logger.error("Error parsing rpc: {0}".format(str(e)))
@@ -740,15 +745,18 @@ class route(JUNOS):
 		finally:
 			self.dev.close()
 		logger.debug(str(soup))
-		return {'route' : {
-					'destination' : soup.find('rt-destination').text,
-					'active' : True if soup.find('current-active') else False,
-					'type' : soup.find('protocol-name').text,
-					'preference' : int(soup.preference.text),
-					'age' : soup.age.text,
-					'next-hop' : soup.to.text,
-					'interface' : soup.via.text
-					}}
+		routes = list()
+		for rt in soup.find_all('rt'):
+			routes.append({
+					'destination' : rt.find('rt-destination').text,
+					'active' : True if rt.find('current-active') else False,
+					'type' : rt.find('protocol-name').text,
+					'preference' : int(rt.preference.text),
+					'age' : rt.age.text if rt.age else None,
+					'next-hop' : rt.to.text if rt.to else None,
+					'interface' : rt.via.text if rt.via else None
+					})
+		return {'route' : routes, 'len' : len(routes)}
 class route_ip(JUNOS):
 	def get(self,ip):
 		try:
