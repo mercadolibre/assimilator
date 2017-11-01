@@ -1832,3 +1832,95 @@ class logging(PAN):
 		for a in soup.response.result.profiles.find_all('entry'):
 			logging.append(a['name'])
 		return {'log-settings' : logging }
+class gp_gateways(PAN):
+	def get(self):
+		response = self.apicall(type='config',\
+								action='get',\
+								xpath="/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/global-protect/global-protect-gateway")
+		if not response.ok:
+			logger.error("Palo Alto response: " + str(response.status_code))
+			return {'error' : str(response.text)}, 502
+		elif BeautifulSoup(response.text,'xml').response['status'] != 'success':
+			logger.error("Palo Alto response: " + str(response.status_code))
+			return {'commit' : False, 'error' : str(response.text)}, 502
+		else:
+			soup = BeautifulSoup(response.text,'xml')
+		ret = {"gateways" : list()}
+		for gw in soup.find('global-protect-gateway').childGenerator():
+			aux = {"name" : gw['name'],"tunnel-mode" : True if gw.find('tunnel-mode').string == 'yes' else False}
+			ret['gateways'].append(aux)
+		ret['len'] = len(ret['gateways'])
+		return ret
+class gp_gateway(PAN):
+	def get(self,gateway):
+		response = self.apicall(type='config',\
+								action='get',\
+								xpath="/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/global-protect/global-protect-gateway/entry[@name='{}']".format(gateway))
+		if not response.ok:
+			logger.error("Palo Alto response: " + str(response.status_code))
+			return {'error' : str(response.text)}, 502
+		elif BeautifulSoup(response.text,'xml').response['status'] != 'success':
+			logger.error("Palo Alto response: " + str(response.status_code))
+			return {'commit' : False, 'error' : str(response.text)}, 502
+		else:
+			soup = BeautifulSoup(response.text,'xml')
+		ret = {"name" : soup.result.entry['name'],"tunnel-mode" : True if gw.find('tunnel-mode').string == 'yes' else False}
+		return ret
+class gp_gateways_stats(PAN):
+	def get(self):
+		response = self.apicall(type='op',\
+								xpath="<show><global-protect-gateway><statistics></statistics></global-protect-gateway></show>")
+		if not response.ok:
+			logger.error("Palo Alto response: " + str(response.status_code))
+			return {'error' : str(response.text)}, 502
+		elif BeautifulSoup(response.text,'xml').response['status'] != 'success':
+			logger.error("Palo Alto response: " + str(response.status_code))
+			return {'commit' : False, 'error' : str(response.text)}, 502
+		else:
+			soup = BeautifulSoup(response.text,'xml')
+		ret = {'gateways' : list()}
+		for gw in soup.result.find_all("Gateway"):
+			ret['gateways'].append({"name" : gw.name.string, "current-users" : int(gw.CurrentUsers.string)})
+		ret['len'] = len(ret['gateways'])
+		return ret
+class gp_gateway_stats(PAN):
+	def get(self,gateway):
+		response = self.apicall(type='op',\
+								xpath="<show><global-protect-gateway><statistics><gateway>{}</gateway></statistics></global-protect-gateway></show>".format(gateway))
+		if not response.ok:
+			logger.error("Palo Alto response: " + str(response.status_code))
+			return {'error' : str(response.text)}, 502
+		elif BeautifulSoup(response.text,'xml').response['status'] != 'success':
+			logger.error("Palo Alto response: " + str(response.status_code))
+			return {'commit' : False, 'error' : str(response.text)}, 502
+		else:
+			soup = BeautifulSoup(response.text,'xml')
+		return {"name" : soup.Gateway.name.string, "current-users" : int(soup.Gateway.CurrentUsers.string)}
+class gp_gateway_users(PAN):
+	def get(self,gateway):
+		response = self.apicall(type='op',\
+								cmd="<show><global-protect-gateway><current-user><gateway>Gateway</gateway></current-user></global-protect-gateway></show>")
+		if not response.ok:
+			logger.error("Palo Alto response: " + str(response.status_code))
+			return {'error' : str(response.text)}, 502
+		elif BeautifulSoup(response.text,'xml').response['status'] != 'success':
+			logger.error("Palo Alto response: " + str(response.status_code))
+			return {'commit' : False, 'error' : str(response.text)}, 502
+		else:
+			soup = BeautifulSoup(response.text,'xml')
+		ret = {"users" : list()}
+		for user in soup.result.childGenerator():
+			ret.append({"domain" : user.domain.string,
+						"islocal" : True if user.islocal.string == 'yes' else False,
+						"username" : user.username.string,
+						"computer" : user.computer.string,
+						"client" : user.client.string,
+						"vpn-type" : user.find("vpn-type").string,
+						"virtual-ip" : user.find("virtual-ip").string,
+						"public-ip" : user.find("public.ip").string,
+						"tunnel-type" : user.find("tunnel-type").string,
+						"login-time" : user.find("login-time").string,
+						"login-time-utc" : user.find("login-time-utc").string,
+						"lifetime" : user.lifetime.string})
+		ret['len'] = len(ret['gateways'])
+		return ret

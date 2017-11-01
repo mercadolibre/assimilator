@@ -101,7 +101,14 @@ api.add_resource(handler.commit, '/api/<string:firewall>/commit')
 #LOGGING
 api.add_resource(handler.logging, '/api/<string:firewall>/logging')
 
-##Palo Alto##
+#GLOBALPROTECT
+api.add_resource(handler.gp_gateways, '/api/<string:firewall>/gateways')
+api.add_resource(handler.gp_gateways_stats, '/api/<string:firewall>/gateways/stats')
+api.add_resource(handler.gp_gateway, '/api/<string:firewall>/<string:gateway>')
+api.add_resource(handler.gp_gateway_stats, '/api/<string:firewall>/<string:gateway>/stats')
+api.add_resource(handler.gp_gateway_users, '/api/<string:firewall>/<string:gateway>/users')
+
+##Juniper##
 #Hitcount
 api.add_resource(handler.hitcount, '/api/<string:firewall>/rules/hitcount')
 
