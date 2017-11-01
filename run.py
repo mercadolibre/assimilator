@@ -104,9 +104,9 @@ api.add_resource(handler.logging, '/api/<string:firewall>/logging')
 #GLOBALPROTECT
 api.add_resource(handler.gp_gateways, '/api/<string:firewall>/gateways')
 api.add_resource(handler.gp_gateways_stats, '/api/<string:firewall>/gateways/stats')
-api.add_resource(handler.gp_gateway, '/api/<string:firewall>/<string:gateway>')
-api.add_resource(handler.gp_gateway_stats, '/api/<string:firewall>/<string:gateway>/stats')
-api.add_resource(handler.gp_gateway_users, '/api/<string:firewall>/<string:gateway>/users')
+api.add_resource(handler.gp_gateway, '/api/<string:firewall>/gateways/<string:gateway>')
+api.add_resource(handler.gp_gateway_stats, '/api/<string:firewall>/gateways/<string:gateway>/stats')
+api.add_resource(handler.gp_gateway_users, '/api/<string:firewall>/gateways/<string:gateway>/users')
 
 ##Juniper##
 #Hitcount
