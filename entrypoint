@@ -2,4 +2,5 @@
 chown -R www-data:www-data /etc/assimilator/
 service apache2 start
 service apache2 stop
-apache2ctl -X
+service apache2 start
+tail -f /var/log/assimilator.log

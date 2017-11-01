@@ -1844,6 +1844,7 @@ class gp_gateways(PAN):
 			logger.error("Palo Alto response: " + str(response.status_code))
 			return {'commit' : False, 'error' : str(response.text)}, 502
 		else:
+			logger.debug(response.text)
 			soup = BeautifulSoup(response.text,'xml')
 		ret = {"gateways" : list()}
 		for gw in soup.find('global-protect-gateway').childGenerator():
