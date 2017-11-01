@@ -914,3 +914,78 @@ class logging(Resource):
 		else:
 			logger.info("{0} active ip {1}".format(firewall, c.primary))
 			return c.get()
+class gp_gateway(Resource):
+	@require_appkey
+	def get(self,firewall,gateway):
+		logger.debug('handler.gp_gateway.get()')
+		fw = Firewall(firewall=firewall).getConfig()
+		if not fw:
+			logger.error('Firewall not found.')
+			return {'error' : 'Firewall not found.'}, 404
+		c = PaloAlto.gp_gateway(firewall_config=fw)
+		if not c.primary:
+			logger.error("Could not get {0} active ip.".format(firewall))
+			return {'error' : 'Could not get firewall active IP.'}, 502
+		else:
+			logger.info("{0} active ip {1}".format(firewall, c.primary))
+			return c.get(gateway)
+class gp_gateway_stats(Resource):
+	@require_appkey
+	def get(self,firewall,gateway):
+		logger.debug('handler.gp_gateway_stats.get()')
+		fw = Firewall(firewall=firewall).getConfig()
+		if not fw:
+			logger.error('Firewall not found.')
+			return {'error' : 'Firewall not found.'}, 404
+		c = PaloAlto.gp_gateway(firewall_config=fw)
+		if not c.primary:
+			logger.error("Could not get {0} active ip.".format(firewall))
+			return {'error' : 'Could not get firewall active IP.'}, 502
+		else:
+			logger.info("{0} active ip {1}".format(firewall, c.primary))
+			return c.get(gateway)
+class gp_gateways(Resource):
+	@require_appkey
+	def get(self,firewall):
+		logger.debug('handler.gp_gateways.get()')
+		fw = Firewall(firewall=firewall).getConfig()
+		if not fw:
+			logger.error('Firewall not found.')
+			return {'error' : 'Firewall not found.'}, 404
+		c = PaloAlto.gp_gateway(firewall_config=fw)
+		if not c.primary:
+			logger.error("Could not get {0} active ip.".format(firewall))
+			return {'error' : 'Could not get firewall active IP.'}, 502
+		else:
+			logger.info("{0} active ip {1}".format(firewall, c.primary))
+			return c.get()
+class gp_gateways_stats(Resource):
+	@require_appkey
+	def get(self,firewall):
+		logger.debug('handler.gp_gateways_stats.get()')
+		fw = Firewall(firewall=firewall).getConfig()
+		if not fw:
+			logger.error('Firewall not found.')
+			return {'error' : 'Firewall not found.'}, 404
+		c = PaloAlto.gp_gateway_stats(firewall_config=fw)
+		if not c.primary:
+			logger.error("Could not get {0} active ip.".format(firewall))
+			return {'error' : 'Could not get firewall active IP.'}, 502
+		else:
+			logger.info("{0} active ip {1}".format(firewall, c.primary))
+			return c.get()
+class gp_gateway_users(Resource):
+	@require_appkey
+	def get(self,firewall,gateway):
+		logger.debug('handler.gp_gateway_users.get()')
+		fw = Firewall(firewall=firewall).getConfig()
+		if not fw:
+			logger.error('Firewall not found.')
+			return {'error' : 'Firewall not found.'}, 404
+		c = PaloAlto.gp_gateway_users(firewall_config=fw)
+		if not c.primary:
+			logger.error("Could not get {0} active ip.".format(firewall))
+			return {'error' : 'Could not get firewall active IP.'}, 502
+		else:
+			logger.info("{0} active ip {1}".format(firewall, c.primary))
+			return c.get(gateway)
