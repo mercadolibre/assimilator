@@ -94,7 +94,7 @@ Response: HTTP 200
 With Docker (recommended):
 ```bash
 cd /opt
-git clone https://github.com/videlanicolas/assimilator && cd assimilator
+git clone https://github.com/mercadolibre/assimilator && cd assimilator
 ./generate_certificate.sh
 docker build -t assimilator /opt/assimilator/
 docker run -d -p 443:443/tcp assimilator
@@ -102,7 +102,7 @@ docker run -d -p 443:443/tcp assimilator
 Without Docker:
 ```bash
 cd /opt
-git clone https://github.com/videlanicolas/assimilator && cd assimilator
+git clone https://github.com/mercadolibre/assimilator && cd assimilator
 ./generate_certificate.sh
 sudo ./install.sh
 ```
