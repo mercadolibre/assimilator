@@ -1847,6 +1847,7 @@ class gp_gateways(PAN):
 			soup = BeautifulSoup(response.text,'xml')
 		ret = {"gateways" : list()}
 		for gw in soup.find('global-protect-gateway').childGenerator():
+			logger.debug("gw: {}".format(str(gw)))
 			aux = {"name" : gw['name'],"tunnel-mode" : True if gw.find('tunnel-mode').string == 'yes' else False}
 			ret['gateways'].append(aux)
 		ret['len'] = len(ret['gateways'])
@@ -1864,7 +1865,7 @@ class gp_gateway(PAN):
 			return {'commit' : False, 'error' : str(response.text)}, 502
 		else:
 			soup = BeautifulSoup(response.text,'xml')
-		ret = {"name" : soup.result.entry['name'],"tunnel-mode" : True if gw.find('tunnel-mode').string == 'yes' else False}
+		ret = {"name" : soup.result.entry['name'],"tunnel-mode" : True if soup.result.find('tunnel-mode').string == 'yes' else False}
 		return ret
 class gp_gateways_stats(PAN):
 	def get(self):
@@ -1910,7 +1911,7 @@ class gp_gateway_users(PAN):
 			soup = BeautifulSoup(response.text,'xml')
 		ret = {"users" : list()}
 		for user in soup.result.childGenerator():
-			ret.append({"domain" : user.domain.string,
+			ret['users'].append({"domain" : user.domain.string,
 						"islocal" : True if user.islocal.string == 'yes' else False,
 						"username" : user.username.string,
 						"computer" : user.computer.string,
@@ -1922,5 +1923,5 @@ class gp_gateway_users(PAN):
 						"login-time" : user.find("login-time").string,
 						"login-time-utc" : user.find("login-time-utc").string,
 						"lifetime" : user.lifetime.string})
-		ret['len'] = len(ret['gateways'])
+		ret['len'] = len(ret['users'])
 		return ret

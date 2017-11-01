@@ -937,7 +937,7 @@ class gp_gateway_stats(Resource):
 		if not fw:
 			logger.error('Firewall not found.')
 			return {'error' : 'Firewall not found.'}, 404
-		c = PaloAlto.gp_gateway(firewall_config=fw)
+		c = PaloAlto.gp_gateway_stats(firewall_config=fw)
 		if not c.primary:
 			logger.error("Could not get {0} active ip.".format(firewall))
 			return {'error' : 'Could not get firewall active IP.'}, 502
