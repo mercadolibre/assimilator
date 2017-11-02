@@ -1845,10 +1845,10 @@ class gp_gateways(PAN):
 			return {'commit' : False, 'error' : str(response.text)}, 502
 		else:
 			soup = BeautifulSoup(response.text,'xml')
-			logger.debug(soup)
 		ret = {"gateways" : list()}
 		for gw in soup.find('global-protect-gateway').childGenerator():
-			logger.debug("gw: {}".format(str(gw)))
+			if type(gw) != Tag:
+				continue
 			aux = {"name" : gw['name'],"tunnel-mode" : True if gw.find('tunnel-mode').string == 'yes' else False}
 			ret['gateways'].append(aux)
 		ret['len'] = len(ret['gateways'])
@@ -1871,7 +1871,7 @@ class gp_gateway(PAN):
 class gp_gateways_stats(PAN):
 	def get(self):
 		response = self.apicall(type='op',\
-								xpath="<show><global-protect-gateway><statistics></statistics></global-protect-gateway></show>")
+								cmd="<show><global-protect-gateway><statistics></statistics></global-protect-gateway></show>")
 		if not response.ok:
 			logger.error("Palo Alto response: " + str(response.status_code))
 			return {'error' : str(response.text)}, 502
@@ -1882,13 +1882,13 @@ class gp_gateways_stats(PAN):
 			soup = BeautifulSoup(response.text,'xml')
 		ret = {'gateways' : list()}
 		for gw in soup.result.find_all("Gateway"):
-			ret['gateways'].append({"name" : gw.name.string, "current-users" : int(gw.CurrentUsers.string)})
+			ret['gateways'].append({"name" : gw.find('name').string, "current-users" : int(gw.CurrentUsers.string)})
 		ret['len'] = len(ret['gateways'])
 		return ret
 class gp_gateway_stats(PAN):
 	def get(self,gateway):
 		response = self.apicall(type='op',\
-								xpath="<show><global-protect-gateway><statistics><gateway>{}</gateway></statistics></global-protect-gateway></show>".format(gateway))
+								cmd="<show><global-protect-gateway><statistics><gateway>{}</gateway></statistics></global-protect-gateway></show>".format(gateway))
 		if not response.ok:
 			logger.error("Palo Alto response: " + str(response.status_code))
 			return {'error' : str(response.text)}, 502
@@ -1897,7 +1897,7 @@ class gp_gateway_stats(PAN):
 			return {'commit' : False, 'error' : str(response.text)}, 502
 		else:
 			soup = BeautifulSoup(response.text,'xml')
-		return {"name" : soup.Gateway.name.string, "current-users" : int(soup.Gateway.CurrentUsers.string)}
+		return {"name" : soup.Gateway.find('name').string, "current-users" : int(soup.Gateway.CurrentUsers.string)}
 class gp_gateway_users(PAN):
 	def get(self,gateway):
 		response = self.apicall(type='op',\
@@ -1912,6 +1912,8 @@ class gp_gateway_users(PAN):
 			soup = BeautifulSoup(response.text,'xml')
 		ret = {"users" : list()}
 		for user in soup.result.childGenerator():
+			if type(gw) != Tag:
+				continue
 			ret['users'].append({"domain" : user.domain.string,
 						"islocal" : True if user.islocal.string == 'yes' else False,
 						"username" : user.username.string,
@@ -1919,7 +1921,7 @@ class gp_gateway_users(PAN):
 						"client" : user.client.string,
 						"vpn-type" : user.find("vpn-type").string,
 						"virtual-ip" : user.find("virtual-ip").string,
-						"public-ip" : user.find("public.ip").string,
+						"public-ip" : user.find("public-ip").string,
 						"tunnel-type" : user.find("tunnel-type").string,
 						"login-time" : user.find("login-time").string,
 						"login-time-utc" : user.find("login-time-utc").string,
