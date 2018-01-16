@@ -164,7 +164,7 @@ class rules(PAN):
 						'data-filtering' : entry.find('data-filtering').member.text if entry.find('data-filtering') else None,
 						'file-blocking' : entry.find('file-blocking').member.text if entry.find('file-blocking') else None,
 						'virus' : entry.find('virus').member.text if entry.find('virus') else None,
-						'spyware' : entry.find('spyware').member.text if entry.find('url-filtering') else None,
+						'spyware' : entry.find('spyware').member.text if entry.find('spyware') else None,
 						'vulnerability' : entry.find('vulnerability').member.text if entry.find('vulnerability') else None,
 						'wildfire-analysis' : entry.find('wildfire-analysis').member.text if entry.find('wildfire-analysis') else None
 					}
