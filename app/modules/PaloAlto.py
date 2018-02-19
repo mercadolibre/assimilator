@@ -1912,7 +1912,7 @@ class gp_gateway_users(PAN):
 			soup = BeautifulSoup(response.text,'xml')
 		ret = {"users" : list()}
 		for user in soup.result.childGenerator():
-			if type(gw) != Tag:
+			if type(user) != Tag:
 				continue
 			ret['users'].append({"domain" : user.domain.string,
 						"islocal" : True if user.islocal.string == 'yes' else False,
