@@ -989,3 +989,19 @@ class gp_gateway_users(Resource):
 		else:
 			logger.info("{0} active ip {1}".format(firewall, c.primary))
 			return c.get(gateway)
+
+class gp_users(Resource):
+	@require_appkey
+	def get(self, firewall, domain):
+		logger.debug('handler.gp_users()')
+		fw = Firewall(firewall=firewall).getConfig()
+		if not fw:
+			logger.error('Firewall not found.')
+			return {'error': 'Firewall not found'}, 404
+		c = PaloAlto.gp_users(firewall_config=fw)
+		if not c.primary:
+			logger.error("Could not get {0} active ip.".format(firewall))
+			return {'error' : 'Could not get firewall active IP.'}, 502
+		else:
+			logger.info("{0} active ip {1}".format(firewall, c.primary))
+			return c.get(domain)
