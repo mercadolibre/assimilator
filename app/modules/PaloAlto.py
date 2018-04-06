@@ -1928,3 +1928,40 @@ class gp_gateway_users(PAN):
 						"lifetime" : user.lifetime.string})
 		ret['len'] = len(ret['users'])
 		return ret
+
+
+class gp_users(PAN):
+	def get(self, domain):
+		response = self.apicall(type='op', \
+								cmd="<show><global-protect-gateway><current-user><domain>{}</domain></current-user></global-protect-gateway></show>".format(domain))
+
+		#Check Response Status
+		if not response.ok:
+			logger.error("Palo Alto response: " + str(response.status_code))
+			return {'error' : str(response.text)}, 502
+		elif BeautifulSoup(response.text,'xml').response['status'] != 'success':
+			logger.error("Palo Alto response: " + str(response.status_code))
+			return {'commit' : False, 'error' : str(response.text)}, 502
+		else:
+			soup = BeautifulSoup(response.text,'xml')
+		ret = {"users" : list()}
+		#Parse XML Reponse
+		for user in soup.result.childGenerator():
+			if type(user) != Tag:
+				continue
+			ret['users'].append({
+				"domain" : user.domain.string,
+				"islocal" : True if user.islocal.string == 'yes' else False,
+				"username" : user.username.string,
+				"computer" : user.computer.string,
+				"client" : user.client.string,
+				"vpn-type" : user.find("vpn-type").string,
+				"virtual-ip" : user.find("virtual-ip").string,
+				"public-ip" : user.find("public-ip").string,
+				"tunnel-type" : user.find("tunnel-type").string,
+				"login-time" : user.find("login-time").string,
+				"login-time-utc" : user.find("login-time-utc").string,
+				"lifetime" : user.lifetime.string})
+
+		ret['len'] = len(ret['users'])
+		return ret
