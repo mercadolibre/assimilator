@@ -107,6 +107,7 @@ api.add_resource(handler.gp_gateways_stats, '/api/<string:firewall>/gateways/sta
 api.add_resource(handler.gp_gateway, '/api/<string:firewall>/gateways/<string:gateway>')
 api.add_resource(handler.gp_gateway_stats, '/api/<string:firewall>/gateways/<string:gateway>/stats')
 api.add_resource(handler.gp_gateway_users, '/api/<string:firewall>/gateways/<string:gateway>/users')
+api.add_resource(handler.gp_users, '/api/<string:firewall>/users/<string:domain>')
 
 ##Juniper##
 #Hitcount
