@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 from lxml import objectify
+import xmltodict
 from functools import wraps
 from app.modules.firewall import Firewall
 import ConfigParser, re, json, logging
@@ -1965,3 +1966,18 @@ class gp_users(PAN):
 
 		ret['len'] = len(ret['users'])
 		return ret
+
+class pa_botnet_report(PAN):
+	def get(self):
+		response = self.apicall(type='report', \
+								async='yes', \
+								reporttype='predefined', \
+								reportname='botnet')
+
+		#Check Response Status
+		if not response.ok:
+			logger.error("Palo Alto response: " + str(response.status_code))
+			return {'error' : str(response.text)}, 502
+
+		data = xmltodict.parse(response.text)
+		return json.loads(json.dumps(data))

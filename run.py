@@ -109,6 +109,9 @@ api.add_resource(handler.gp_gateway_stats, '/api/<string:firewall>/gateways/<str
 api.add_resource(handler.gp_gateway_users, '/api/<string:firewall>/gateways/<string:gateway>/users')
 api.add_resource(handler.gp_users, '/api/<string:firewall>/users/<string:domain>')
 
+#REPORTS
+api.add_resource(handler.pa_botnet_report, '/api/<string:firewall>/report/botnet')
+
 ##Juniper##
 #Hitcount
 api.add_resource(handler.hitcount, '/api/<string:firewall>/rules/hitcount')
