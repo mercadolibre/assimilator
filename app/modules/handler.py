@@ -1005,3 +1005,25 @@ class gp_users(Resource):
 		else:
 			logger.info("{0} active ip {1}".format(firewall, c.primary))
 			return c.get(domain)
+
+class pa_botnet_report(Resource):
+	@require_appkey
+	def get(self, firewall):
+		logger.debug('handler.pa_botnet_report()')
+		fw = Firewall(firewall=firewall).getConfig()
+		if not fw:
+			logger.error('Firewall not found.')
+			return {'error': 'Firewall not found'}, 404
+		c = PaloAlto.pa_botnet_report(firewall_config=fw)
+		if not c.primary:
+			logger.error("Could not get {0} active ip.".format(firewall))
+			return {'error' : 'Could not get firewall active IP.'}, 502
+		else:
+			logger.info("{0} active ip {1}".format(firewall, c.primary))
+			return c.get()
+
+
+
+
+
+
